@@ -2,8 +2,9 @@
 
 (function($) {
 
+var apiId = '3947842';
 var authUrl = 'https://oauth.vk.com/authorize?'
-	+ 'client_id=3947842&'
+	+ 'client_id=' + apiId + '&'
 	+ 'scope=messages,offline&'
 	+ 'redirect_uri=' + encodeURIComponent('https://oauth.vk.com/blank.html') + '&'
 	+ 'display=popup&'
@@ -43,6 +44,14 @@ var onAuthTabCreate = function(tab) {
 
 var onAccessTokenReceived = function(accessToken, userId, tab) {
 	chrome.tabs.remove(tab.id);
+    var vk = new VkApi(apiId);
+    vk.setAccessToken(accessToken);
+    vk.apiMethod('messages.getLongPollServer', {use_ssl: 1, need_pts: 0})
+        .then(function(response) {
+            vk.longPoll(response.server, response.key, response.ts, function(messageUpdates) {
+                console.log(messageUpdates);
+            }, true);
+        });
 };
 
 $(function() {
